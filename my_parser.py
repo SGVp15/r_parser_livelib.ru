@@ -1,7 +1,7 @@
 import json
 import re
+
 import bs4
-from bs4 import formatter
 
 from Book import Book
 
@@ -13,7 +13,7 @@ def parsing(s: str):
     books = soup.find_all('li', class_='book-item__item book-item--full')
     for book in books:
         try:
-            title = book.find_all_next('a', class_='book-item__title')[0].text
+            title = book.find_all('a', class_='book-item__title')[0].text
         except (IndexError, AttributeError):
             title = ''
         try:
@@ -21,22 +21,27 @@ def parsing(s: str):
         except (IndexError, AttributeError):
             author = ''
 
-        isbn = ''
-        lang = ''
-        year = ''
-        book_item_editions = book.find_all_next('table', class_='book-item-edition')
+        book_item_editions = book.find_all('table', class_='book-item-edition')
         for book_item in book_item_editions:
-            val = book_item.find_all_next('td')[0]
-            if val.text == 'Язык:':
-                lang = val.find_next('td').text
-            if val.text == 'ISBN:':
-                isbn = val.find_next('td').text
-            if val.text == 'Год издания:':
-                year = val.find_next('td').text
+            isbn = ''
+            lang = ''
+            year = ''
+            for row in book_item.find_all('tr'):
+                try:
+                    k = row.find_all('td')[0].text
+                    v = row.find_all('td')[1].text
+                    if k == 'Язык:':
+                        lang = v
+                    if k == 'ISBN:':
+                        isbn = v
+                    if k == 'Год издания:':
+                        year = v
+                except AttributeError:
+                    continue
 
-        rating = book.find_all_next('div', class_='book-item__rating')[0].text
+        rating = book.find_all('div', class_='book-item__rating')[0].text
         try:
-            total_read = str(book.find_all_next('div', class_='book-item-stat')[0].find_next('a'))
+            total_read = str(book.find_all('div', class_='book-item-stat')[0].find_next('a'))
             total_read = re.findall(r'title="(\d+)', total_read)[0]
         except (IndexError, AttributeError):
             total_read = ''
