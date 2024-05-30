@@ -3,6 +3,8 @@ import re
 import bs4
 from bs4 import formatter
 
+from Book import Book
+
 
 def parsing(s: str):
     out = ''
@@ -25,9 +27,6 @@ def parsing(s: str):
         book_item_editions = book.find_all_next('table', class_='book-item-edition')
         for book_item in book_item_editions:
             val = book_item.find_all_next('td')[0]
-            a = val.text
-            print(val.text)
-            # [0].find_next('td')
             if val.text == 'Язык:':
                 lang = val.find_next('td').text
             if val.text == 'ISBN:':
@@ -36,9 +35,15 @@ def parsing(s: str):
                 year = val.find_next('td').text
 
         rating = book.find_all_next('div', class_='book-item__rating')[0].text
-        print(f'{title=},{author=},{rating=},{isbn=},{year=}')
-        out += '\t'.join([title, author, rating, year])
-        out +='\n'
+        try:
+            total_read = str(book.find_all_next('div', class_='book-item-stat')[0].find_next('a'))
+            total_read = re.findall(r'title="(\d+)', total_read)[0]
+        except (IndexError, AttributeError):
+            total_read = ''
+        book = Book(title, author, year, isbn, rating, total_read)
+
+        out += str(book)
+        out += '\n'
     return out
 
 
