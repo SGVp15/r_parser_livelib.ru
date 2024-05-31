@@ -41,9 +41,9 @@ def parsing(s: str):
 
         rating = book.find_all('div', class_='book-item__rating')[0].text
         try:
-            total_read = str(book.find_all('div', class_='book-item-stat')[0].find_next('a'))
-            total_read = re.findall(r'title="(\d+)', total_read)[0]
-        except (IndexError, AttributeError):
+            total_read = str(book.find_all('div', class_='book-item-stat')[0].find('a').get('title', default=''))
+            total_read = re.sub(r'[^\d]', '', total_read)
+        except (TypeError, IndexError, AttributeError) as e:
             total_read = ''
         book = Book(title, author, year, isbn, rating, total_read)
 
